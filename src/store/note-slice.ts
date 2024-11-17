@@ -6,18 +6,13 @@ export interface Note {
   salary: string;
   response: string;
   note: string;
-  _id: string;
 }
-export interface AddNote {
-  company: string;
-  vacancy: string;
-  salary: string;
-  response: string;
-  note: string;
+export interface NoteWithId extends Note {
+  _id: string;
 }
 
 interface AdminsState {
-  notes: Note[] | null;
+  notes: NoteWithId[] | null;
   error: string | null;
   isLoading: boolean;
 }
@@ -36,22 +31,63 @@ const notesSlice = createSlice({
       state.isLoading = true;
       state.error = null;
     },
-    getNotesSuccess: (state, action: PayloadAction<{ notes: Note[] }>) => {
+    getNotesSuccess: (
+      state,
+      action: PayloadAction<{ notes: NoteWithId[] }>
+    ) => {
       const { notes } = action.payload;
       state.isLoading = false;
       state.notes = notes;
     },
-    getNotesFailure: (state, action: PayloadAction<string>) => {
+    setNotesFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
       state.error = action.payload;
     },
-    updateNote: (state, action: PayloadAction<Note>) => {
+    updateNote: (state, action: PayloadAction<NoteWithId>) => {
       if (action.payload) {
         state.isLoading = true;
         state.error = null;
       }
     },
-    addNote: (state, action: PayloadAction<AddNote>) => {
+    updateNoteSuccess: (state, action: PayloadAction<NoteWithId>) => {
+      if (action.payload) {
+        state.isLoading = false;
+        state.error = null;
+        const updatedNotes = state?.notes?.map((item) =>
+          item._id === action.payload._id ? action.payload : item
+        );
+        if (updatedNotes) {
+          state.notes = updatedNotes;
+        }
+      }
+    },
+    addNoteSuccess: (state, action: PayloadAction<NoteWithId>) => {
+      if (action.payload) {
+        state.isLoading = false;
+        state.error = null;
+        if (state.notes) {
+          const updatedNotes = [...state.notes, action.payload];
+          if (updatedNotes) {
+            state.notes = updatedNotes;
+          }
+        }
+      }
+    },
+    deleteNoteSuccess: (state, action: PayloadAction<string[]>) => {
+      if (action.payload) {
+        state.isLoading = false;
+        state.error = null;
+        if (state.notes) {
+          const updatedNotes = state.notes.filter(
+            (item) => !action.payload.includes(item._id)
+          );
+          if (updatedNotes) {
+            state.notes = updatedNotes;
+          }
+        }
+      }
+    },
+    addNote: (state, action: PayloadAction<Note>) => {
       if (action.payload) {
         state.isLoading = true;
         state.error = null;
@@ -68,8 +104,11 @@ export const {
   getNotes,
   addNote,
   getNotesSuccess,
-  getNotesFailure,
+  setNotesFailure,
   updateNote,
   deleteNote,
+  updateNoteSuccess,
+  addNoteSuccess,
+  deleteNoteSuccess,
 } = notesSlice.actions;
 export default notesSlice.reducer;

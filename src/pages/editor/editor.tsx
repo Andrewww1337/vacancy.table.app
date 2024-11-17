@@ -5,9 +5,13 @@ import { Spin, message } from 'antd';
 import { NotesTable } from '../../components/note-table/note-table';
 import { NoteEditWindow } from '../../components/note-edit-window/note-edit-window';
 
-import { SaveNoteTypes } from '../../types/edit-types';
-
-import { getNotes, Note, updateNote, addNote } from '../../store/note-slice';
+import {
+  getNotes,
+  updateNote,
+  addNote,
+  NoteWithId,
+  Note,
+} from '../../store/note-slice';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 
 import '../../components/styles/edit-window.css';
@@ -15,33 +19,24 @@ import '../../components/styles/edit-window.css';
 export const Editor = () => {
   const dispatch = useAppDispatch();
 
-  const [editNote, setEditNote] = useState<Note>();
+  const [editedNote, setEditedNote] = useState<NoteWithId>();
   const [createNote, setCreateNote] = useState(false);
 
-  const notesFromServer = useAppSelector((state) => state.notes.notes);
-  const notesError = useAppSelector((state) => state.notes.error);
-  const notesIsLoading = useAppSelector((state) => state.notes.isLoading);
+  const notesState = useAppSelector((state) => state.notes);
 
   useEffect(() => {
     dispatch(getNotes());
   }, []);
   useEffect(() => {
-    if (notesError) {
-      message.error(` ${notesError ? notesError : ''}`);
+    if (notesState.error) {
+      message.error(notesState.error);
     }
-  }, [notesError]);
+  }, [notesState.error]);
 
-  const saveNote = (value: SaveNoteTypes) => {
-    if (editNote) {
-      const updatedNote: {
-        _id: string;
-        company: string;
-        vacancy: string;
-        salary: string;
-        response: string;
-        note: string;
-      } = {
-        _id: editNote._id,
+  const onSaveNote = (value: NoteWithId) => {
+    if (editedNote) {
+      const updatedNote: NoteWithId = {
+        _id: editedNote._id,
         company: value.company,
         vacancy: value.vacancy,
         salary: value.salary,
@@ -49,18 +44,12 @@ export const Editor = () => {
         note: value.note,
       };
       dispatch(updateNote(updatedNote));
-      setEditNote(undefined);
+      setEditedNote(undefined);
     }
   };
 
-  const addNewNote = (value: SaveNoteTypes) => {
-    const note: {
-      company: string;
-      vacancy: string;
-      salary: string;
-      response: string;
-      note: string;
-    } = {
+  const onAddNewNote = (value: NoteWithId) => {
+    const note: Note = {
       company: value.company,
       vacancy: value.vacancy,
       salary: value.salary,
@@ -71,33 +60,33 @@ export const Editor = () => {
     setCreateNote(false);
   };
 
-  if (notesIsLoading) {
+  if (notesState.isLoading) {
     return <Spin fullscreen={true} size="large" />;
   }
 
   return (
     <div>
-      {editNote && (
+      {editedNote && (
         <NoteEditWindow
-          saveNote={saveNote}
-          setEditNote={setEditNote}
-          editNote={editNote}
-          editor={true}
+          onSaveNote={onSaveNote}
+          setEditNote={setEditedNote}
+          editedNote={editedNote}
+          isEditor={true}
         />
       )}
 
       {createNote && (
         <NoteEditWindow
           setCreateNote={setCreateNote}
-          editor={false}
-          saveNote={addNewNote}
+          isEditor={false}
+          onSaveNote={onAddNewNote}
         />
       )}
 
-      {notesFromServer && (
+      {notesState.notes && (
         <NotesTable
-          notesFromServer={notesFromServer}
-          setEditNote={setEditNote}
+          notes={notesState.notes}
+          setEditedNote={setEditedNote}
           setCreateNote={setCreateNote}
         />
       )}

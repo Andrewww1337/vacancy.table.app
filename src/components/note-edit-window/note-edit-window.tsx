@@ -3,26 +3,30 @@ import React from 'react';
 import { Button, Select, Form, Input } from 'antd';
 import TextArea from 'antd/es/input/TextArea';
 
-import { SaveNoteTypes } from '../../types/edit-types';
-import { Note } from '../../store/note-slice';
+import { NoteWithId } from '../../store/note-slice';
 
 export const NoteEditWindow = ({
-  editNote,
-  saveNote,
+  editedNote,
+  onSaveNote,
   setEditNote,
   setCreateNote,
-  editor,
+  isEditor,
 }: {
-  setEditNote?: React.Dispatch<React.SetStateAction<Note | undefined>>;
-  editNote?: Note;
-  saveNote: (e: SaveNoteTypes) => void;
+  setEditNote?: React.Dispatch<React.SetStateAction<NoteWithId | undefined>>;
+  editedNote?: NoteWithId;
+  onSaveNote: (e: NoteWithId) => void;
   setCreateNote?: React.Dispatch<React.SetStateAction<boolean>>;
-  editor: boolean;
+  isEditor: boolean;
 }) => {
+  const selectOptions = [
+    { value: 'Ожидание', label: 'Ожидание' },
+    { value: 'Отклонен', label: 'Отклонен' },
+    { value: 'Принят', label: 'Принят' },
+  ];
   const goBack = () => {
-    if (editor && setEditNote) {
+    if (isEditor && setEditNote) {
       setEditNote(undefined);
-    } else if (!editor && setCreateNote) {
+    } else if (!isEditor && setCreateNote) {
       setCreateNote(false);
     }
   };
@@ -31,13 +35,13 @@ export const NoteEditWindow = ({
       <div onClick={(e) => e.stopPropagation()} className="editWindow">
         <Form
           initialValues={
-            editor
+            isEditor
               ? {
-                  company: editNote?.company,
-                  vacancy: editNote?.vacancy,
-                  salary: editNote?.salary,
-                  note: editNote?.note,
-                  response: editNote?.response,
+                  company: editedNote?.company,
+                  vacancy: editedNote?.vacancy,
+                  salary: editedNote?.salary,
+                  note: editedNote?.note,
+                  response: editedNote?.response,
                 }
               : {}
           }
@@ -47,7 +51,7 @@ export const NoteEditWindow = ({
           wrapperCol={{
             span: 24,
           }}
-          onFinish={saveNote}
+          onFinish={onSaveNote}
           style={{ width: '100%' }}
         >
           <div className="editWindowItems">
@@ -103,13 +107,7 @@ export const NoteEditWindow = ({
               name="response"
               label="Статус отклика"
             >
-              <Select
-                options={[
-                  { value: 'Ожидание', label: 'Ожидание' },
-                  { value: 'Отклонен', label: 'Отклонен' },
-                  { value: 'Принят', label: 'Принят' },
-                ]}
-              />
+              <Select options={selectOptions} />
             </Form.Item>
           </div>
           <Form.Item
