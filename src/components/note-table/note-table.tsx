@@ -8,7 +8,7 @@ import type { FilterDropdownProps } from 'antd/es/table/interface';
 
 import { deleteNote } from '../../store/note-slice';
 import { useAppDispatch } from '../../store/hooks';
-import { Note } from '../../store/note-slice';
+import { NoteWithId } from '../../store/note-slice';
 
 interface DataType {
   key: string;
@@ -19,18 +19,16 @@ interface DataType {
   note: string;
 }
 
-type DataIndex = keyof DataType;
-
 export const NotesTable = ({
-  setEditNote,
-  notesFromServer,
+  setEditedNote,
+  notes,
   setCreateNote,
 }: {
-  setEditNote: React.Dispatch<React.SetStateAction<Note | undefined>>;
-  notesFromServer: Note[];
+  setEditedNote: React.Dispatch<React.SetStateAction<NoteWithId | undefined>>;
+  notes: NoteWithId[];
   setCreateNote: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const transformNotes = notesFromServer?.map((note) => ({
+  const transformNotes = notes?.map((note) => ({
     company: note.company,
     vacancy: note.vacancy,
     salary: note.salary,
@@ -60,14 +58,14 @@ export const NotesTable = ({
   };
 
   const openNote = (noteId: string) => {
-    const selectedNote = notesFromServer.find((note) => note._id === noteId);
-    setEditNote(selectedNote);
+    const selectedNote = notes.find((note) => note._id === noteId);
+    setEditedNote(selectedNote);
   };
 
   const handleSearch = (
     selectedKeys: string[],
     confirm: FilterDropdownProps['confirm'],
-    dataIndex: DataIndex
+    dataIndex: keyof DataType
   ) => {
     confirm();
     setSearchText(selectedKeys[0]);
@@ -80,7 +78,7 @@ export const NotesTable = ({
   };
 
   const getColumnSearchProps = (
-    dataIndex: DataIndex
+    dataIndex: keyof DataType
   ): TableColumnType<DataType> => ({
     filterDropdown: ({
       setSelectedKeys,
@@ -221,25 +219,28 @@ export const NotesTable = ({
         columns={columns}
         dataSource={data}
       />
+      <Button
+        style={{
+          width: '40px',
+          height: '40px',
+          marginLeft: '20px',
+          backgroundColor: 'MediumSeaGreen',
+          color: 'white',
+          borderRadius: '50px',
+          marginBottom: '30px',
+        }}
+        onClick={() => setCreateNote(true)}
+      >
+        +
+      </Button>
       {deleteNotes && deleteNotes.length > 0 && (
         <Button
-          style={{ width: '10%', marginLeft: '20px' }}
+          style={{ width: '10%', marginLeft: '20px', marginBottom: '30px' }}
           onClick={() => getDeleteNotes()}
         >
           Удалить
         </Button>
       )}
-      <Button
-        style={{
-          width: '10%',
-          marginLeft: '20px',
-          backgroundColor: 'MediumSeaGreen',
-          color: 'white',
-        }}
-        onClick={() => setCreateNote(true)}
-      >
-        Добавить
-      </Button>
     </div>
   );
 };

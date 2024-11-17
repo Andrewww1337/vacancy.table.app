@@ -3,77 +3,76 @@ import { axios } from '../api/axios';
 
 import { PayloadAction } from '@reduxjs/toolkit';
 import {
-  Note,
+  NoteWithId,
   getNotes,
   addNote,
   getNotesSuccess,
-  getNotesFailure,
+  setNotesFailure,
   updateNote,
   deleteNote,
+  updateNoteSuccess,
+  addNoteSuccess,
+  deleteNoteSuccess,
 } from '../note-slice';
 
 function* handleGetNotes() {
   try {
     const {
       data: { notes },
-    }: { data: { notes: Note[] } } = yield call(
+    }: { data: { notes: NoteWithId[] } } = yield call(
       axios.get,
       '/api/user/all-notes'
     );
     yield put(getNotesSuccess({ notes }));
   } catch (error) {
-    yield put(getNotesFailure('Failed to fetch notes. Refresh the page.'));
+    yield put(setNotesFailure('Failed to fetch notes. Refresh the page.'));
   }
 }
 
-function* handleUpdateNote(action: PayloadAction<Note>) {
+function* handleUpdateNote(action: PayloadAction<NoteWithId>) {
   try {
-    const {
-      data: { notes },
-    }: { data: { notes: Note[] } } = yield call(() =>
+    const { data }: { data: { note: NoteWithId } } = yield call(() =>
       axios({
         method: 'post',
         url: '/api/user/update-note',
         data: { note: action.payload, id: action.payload._id },
       })
     );
-    yield put(getNotesSuccess({ notes }));
+    yield put(updateNoteSuccess(data.note));
   } catch (error) {
-    yield put(getNotesFailure('Failed to update note. Refresh the page.'));
+    yield put(setNotesFailure('Failed to update note. Refresh the page.'));
   }
 }
 
-function* handleAddNote(action: PayloadAction<Note>) {
+function* handleAddNote(action: PayloadAction<NoteWithId>) {
   try {
-    const {
-      data: { notes },
-    }: { data: { notes: Note[] } } = yield call(() =>
+    const { data }: { data: { note: NoteWithId } } = yield call(() =>
       axios({
         method: 'post',
         url: '/api/user/add-note',
         data: { note: action.payload },
       })
     );
-    yield put(getNotesSuccess({ notes }));
+    yield put(addNoteSuccess(data.note));
   } catch (error) {
-    yield put(getNotesFailure('Failed to add note. Refresh the page.'));
+    yield put(setNotesFailure('Failed to add note. Refresh the page.'));
   }
 }
 
 function* handleDeleteNotes(action: PayloadAction<number[]>) {
   try {
     const {
-      data: { notes },
-    }: { data: { notes: Note[] } } = yield call(() =>
+      data: { ids },
+    }: { data: { ids: string[] } } = yield call(() =>
       axios({
         method: 'delete',
         url: '/api/user/delete-notes',
         data: { ids: action.payload },
       })
     );
-    yield put(getNotesSuccess({ notes }));
+    yield put(deleteNoteSuccess(ids));
   } catch (error) {
-    yield put(getNotesFailure('Failed to delete notes. Refresh the page.'));
+    yield put(setNotesFailure('Failed to delete notes. Refresh the page.'));
   }
 }
 
