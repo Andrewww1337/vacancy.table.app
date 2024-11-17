@@ -5,6 +5,12 @@ import TextArea from 'antd/es/input/TextArea';
 
 import { NoteWithId } from '../../store/note-slice';
 
+const selectOptions = [
+  { value: 'Ожидание', label: 'Ожидание' },
+  { value: 'Отклонен', label: 'Отклонен' },
+  { value: 'Принят', label: 'Принят' },
+];
+
 export const NoteEditWindow = ({
   editedNote,
   onSaveNote,
@@ -18,11 +24,6 @@ export const NoteEditWindow = ({
   setCreateNote?: React.Dispatch<React.SetStateAction<boolean>>;
   isEditor: boolean;
 }) => {
-  const selectOptions = [
-    { value: 'Ожидание', label: 'Ожидание' },
-    { value: 'Отклонен', label: 'Отклонен' },
-    { value: 'Принят', label: 'Принят' },
-  ];
   const goBack = () => {
     if (isEditor && setEditNote) {
       setEditNote(undefined);
